@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
 # --- 1. 配置 ---
-DATA_FILE = '.venv/外部数据集11.2.xlsx'
+DATA_FILE = '外部数据集11.2.xlsx'
 MODEL_FILE = 'final_model.updated.joblib'
 PREPROCESS_FILE = 'scaler.updated.joblib'
 TARGET_COLUMN = 'PHN'  # 目标列名
