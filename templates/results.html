@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHN Prediction Results</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* 定义主题色 */
+        :root {
+            --color-brand: #008771; /* 专业绿/青色 */
+            --color-light-bg: #f5f7fa; /* 柔和背景色 */
+            --color-high-risk: #dc3545; /* 红色警告 */
+            --color-low-risk: #28a745; /* 绿色安全 */
+        }
+
+        body {
+            background-color: var(--color-light-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .result-card {
+            margin-top: 80px; /* 增加顶部间距 */
+            padding: 50px;
+            border-radius: 18px; /* 更圆润的边角 */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* 更深的阴影效果 */
+            background-color: white;
+        }
+
+        .page-title {
+            color: #343a40;
+            font-weight: 700;
+        }
+
+        .risk-label {
+            display: inline-block;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        /* 动态风险颜色*/
+        .risk-high {
+            background-color: var(--color-high-risk);
+            color: white;
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.4);
+        }
+
+        .risk-low {
+            background-color: var(--color-low-risk);
+            color: white;
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
+        }
+
+        /* PHN 概率值显示样式 */
+        .prediction-value {
+            font-size: 3rem; /* 大字体突出显示 */
+            font-weight: 300;
+            color: var(--color-brand);
+            margin-top: 5px;
+        }
+
+        .btn-brand {
+            --bs-btn-bg: var(--color-brand);
+            --bs-btn-border-color: var(--color-brand);
+            --bs-btn-hover-bg: #006856;
+            --bs-btn-hover-border-color: #006856;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 8px;
+        }
+
+        /* 兼容未定义的异常结果 */
+        .risk-unknown {
+            background-color: #6c757d; /* 灰色 */
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card result-card text-center">
+                <h1 class="page-title mb-5">PHN Prediction Results</h1>
+
+                <div class="mb-5">
+                    <p class="fs-5 text-muted mb-2">PHN Risk Prediction</p>
+
+                    {% if "high risk" in prediction_class_text |lower%}
+                    <div class="risk-label risk-high">
+                        <i class="fas fa-exclamation-triangle me-2"></i> {{ prediction_class_text }}
+                    </div>
+                    {% elif "low risk" in prediction_class_text |lower %}
+                    <div class="risk-label risk-low">
+                        <i class="fas fa-check-circle me-2"></i> {{ prediction_class_text }}
+                    </div>
+                    {% else %}
+                    <div class="risk-label risk-unknown">
+                        <i class="fas fa-question-circle me-2"></i> {{ prediction_class_text }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-5 border-top pt-4">
+                    <p class="fs-5 text-muted mb-0">PHN Probability:</p>
+                    <p class="prediction-value">{{ prediction_proba }}</p>
+                    <small class="text-secondary">(0.0000 - 1.0000)</small>
+                </div>
+
+                <a href="/" class="btn btn-brand btn-lg w-100">
+                    <i class="fas fa-arrow-left me-2"></i> Return
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+</body>
+</html>
