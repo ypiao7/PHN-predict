@@ -1,5 +1,5 @@
 services:
   - type: web
     name: phn-flask
-    env: docker
+    env: python
     plan: free
