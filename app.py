@@ -107,7 +107,7 @@ def predict_from_request():
     prediction_proba = model.predict_proba(x_final)[:, 1]  # 取 PHN 阳性的概率 (第二列)
     prediction_class = model.predict(x_final)[0]  # 取预测的类别 (0 或 1)
 
-    return prediction_class, prediction_proba
+    return prediction_class, prediction_proba, x_final
 
 # =========================
 # 6) 页面路由（Render 打开也能用）
@@ -122,7 +122,7 @@ def predict():
     传统页面跳转（用于你 Render 直接打开网页提交表单）
     """
     try:
-        pred, proba = predict_from_request()
+        pred, proba, _ = predict_from_request()
         return redirect(url_for(
             "result",
             prediction_class=str(pred),
@@ -159,7 +159,7 @@ def api_predict():
     GitHub Pages 前端 fetch 调用这个接口，返回 JSON
     """
     try:
-        pred, proba = predict_from_request()
+        pred, proba, _ = predict_from_request()
         return jsonify({
             "prediction_class": pred,
             "prediction_proba": round(proba, 4),
