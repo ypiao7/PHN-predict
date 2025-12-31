@@ -159,7 +159,7 @@ def api_predict():
     GitHub Pages 前端 fetch 调用这个接口，返回 JSON
     """
     try:
-        pred, proba, _ = predict_from_request()
+        pred, proba = predict_from_request()
         return jsonify({
             "prediction_class": pred,
             "prediction_proba": round(proba, 4),
