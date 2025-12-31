@@ -69,20 +69,6 @@ def get_feature_value(field_name: str, default_value: float = 0.0) -> float:
     except ValueError:
         return default_value
 
-# =========================
-# 5) 模型输入特征
-#    逻辑：前 9 个标准化，Baseline_VAS 不标准化（最后一列原样拼回去）
-# =========================
-NUM_FEATURES = ["age",
-                "pcs_score",
-                "mcs_ics_score",
-                "psqi_score",
-                "ly_count",
-                "mono_count",
-                "alb",
-                "glu",
-                "a_g",
-                "baseline_vas"]
 
 def predict_from_request():
     """
@@ -122,7 +108,7 @@ def predict_from_request():
     prediction_proba = model.predict_proba(x_final)[:, 1]  # 取 PHN 阳性的概率 (第二列)
     prediction_class = model.predict(x_final)[0]  # 取预测的类别 (0 或 1)
 
-    return prediction_class, prediction_proba, x_final
+    return prediction_class, prediction_proba
 
 # =========================
 # 6) 页面路由（Render 打开也能用）
@@ -137,7 +123,7 @@ def predict():
     传统页面跳转（用于你 Render 直接打开网页提交表单）
     """
     try:
-        pred, proba, _ = predict_from_request()
+        pred, proba = predict_from_request()
         return redirect(url_for(
             "result",
             prediction_class=str(pred),
