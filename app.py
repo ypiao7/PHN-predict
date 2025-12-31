@@ -73,65 +73,16 @@ def get_feature_value(field_name: str, default_value: float = 0.0) -> float:
 # 5) 模型输入特征
 #    逻辑：前 9 个标准化，Baseline_VAS 不标准化（最后一列原样拼回去）
 # =========================
-NUM_FEATURES = ["Age", "PCS", "MCS", "PSQI", "LY#", "MO#", "ALB", "Glu", "A/G"]
-CAT_FEATURE = "Baseline_VAS"  # 不标准化
-MODEL_FEATURES = NUM_FEATURES + [CAT_FEATURE]  # 总共 10 个
-
-# 表单字段名 -> 模型特征名（确保与你 GitHub Pages 的 index.html input name 一致）
-FORM_TO_FEATURE = {
-    "age": "Age",
-    "pcs_score": "PCS",
-    "mcs_ics_score": "MCS",
-    "psqi_score": "PSQI",
-    "ly_count": "LY#",
-    "mono_count": "MO#",
-    "alb": "ALB",
-    "glu": "Glu",
-    "a_g": "A/G",
-    "baseline_vas": "Baseline_VAS",
-}
-
-def build_feature_vector() -> np.ndarray:
-    """
-    构建 (1,10) 特征向量，顺序严格按 MODEL_FEATURES
-    """
-    feat_map = {f: 0.0 for f in MODEL_FEATURES}
-    for form_key, feat_name in FORM_TO_FEATURE.items():
-        feat_map[feat_name] = get_feature_value(form_key, 0.0)
-
-    x = np.array([feat_map[f] for f in MODEL_FEATURES], dtype=float).reshape(1, -1)
-    return x
-
-def scale_features_baseline_unscaled(x_10: np.ndarray) -> np.ndarray:
-    """
-    - NUM_FEATURES：按 scaler 的 mean/scale 标准化（按列名对齐）
-    - Baseline_VAS：不标准化，原样拼回去
-    """
-    if scaler is None:
-        raise RuntimeError("Scaler is not loaded.")
-
-    cols = list(getattr(scaler, "feature_names_in_", []))
-    if not cols:
-        raise RuntimeError("Scaler does not have feature_names_in_.")
-
-    # 检查 NUM_FEATURES 都在 scaler 里
-    missing_num = [c for c in NUM_FEATURES if c not in cols]
-    if missing_num:
-        raise ValueError(f"Numeric features missing in scaler columns: {missing_num}")
-
-    # ✅ 不再依赖 x_10 的“位置切片”，改成按 MODEL_FEATURES 显式取列
-    feat_index = {name: i for i, name in enumerate(MODEL_FEATURES)}
-
-    x_num = np.array([x_10[:, feat_index[f]] for f in NUM_FEATURES], dtype=float).T  # (1,9)
-    x_cat = x_10[:, [feat_index[CAT_FEATURE]]]  # (1,1)
-
-    idx_num = [cols.index(c) for c in NUM_FEATURES]
-    means = scaler.mean_[idx_num]
-    scales = scaler.scale_[idx_num]
-
-    x_num_scaled = (x_num - means) / scales
-    x_final = np.concatenate([x_num_scaled, x_cat], axis=1)  # (1,10)
-    return x_final
+NUM_FEATURES = ["age",
+                "pcs_score",
+                "mcs_ics_score",
+                "psqi_score",
+                "ly_count",
+                "mono_count",
+                "alb",
+                "glu",
+                "a_g",
+                "baseline_vas"]
 
 def predict_from_request():
     """
@@ -142,12 +93,36 @@ def predict_from_request():
     if scaler is None:
         raise RuntimeError("Scaler not loaded.")
 
-    x_10 = build_feature_vector()
-    x_final = scale_features_baseline_unscaled(x_10)
+    input_features = [
+        get_feature_value('age'),
+        get_feature_value('pcs_score'),
+        get_feature_value('mcs_ics_score'),
+        get_feature_value('psqi_score'),
+        get_feature_value('ly_count'),
+        get_feature_value('mono_count'),
+        get_feature_value('alb'),
+        get_feature_value('glu'),
+        get_feature_value('a_g'),
+        get_feature_value('baseline_vas_score')
+    ]
 
-    proba = float(model.predict_proba(x_final)[:, 1][0])
-    pred = int(model.predict(x_final)[0])
-    return pred, proba, x_final
+    final_features = np.array(input_features).reshape(1, -1)
+
+    scaler = joblib.load('scaler.joblib')
+    means = scaler.mean_[[0, 4, 5, 6, 8, 9, 39, 42, 50]]
+    scales = scaler.scale_[[0, 4, 5, 6, 8, 9, 39, 42, 50]]
+
+    x_num = final_features[:, :9]
+    x_cat = final_features[:, [-1]]
+
+    x_num_scaled = (x_num - means) / scales
+    x_final = np.concatenate([x_num_scaled, x_cat], axis=1)
+
+    # 3. 进行预测
+    prediction_proba = model.predict_proba(x_final)[:, 1]  # 取 PHN 阳性的概率 (第二列)
+    prediction_class = model.predict(x_final)[0]  # 取预测的类别 (0 或 1)
+
+    return prediction_class, prediction_proba, x_final
 
 # =========================
 # 6) 页面路由（Render 打开也能用）
