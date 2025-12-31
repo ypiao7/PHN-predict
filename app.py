@@ -104,13 +104,10 @@ def predict_from_request():
     x_final = np.concatenate([x_num_scaled, x_cat], axis=1)
 
     # 3. 进行预测
-    prediction_proba = model.predict_proba(x_final)[:, 1]  # 取 PHN 阳性的概率 (第二列)
-    prediction_class = model.predict(x_final)[0]  # 取预测的类别 (0 或 1)
+    prediction_proba = float(model.predict_proba(x_final)[:, 1])  # 取 PHN 阳性的概率 (第二列)
+    prediction_class = int(model.predict(x_final)[0])  # 取预测的类别 (0 或 1)
 
-    proba = float(prediction_proba[0])  # 或者 prediction_proba[0].item()
-    pred = int(prediction_class)
-
-    return pred, proba, x_final
+    return prediction_class, prediction_proba, x_final
 
 # =========================
 # 6) 页面路由（Render 打开也能用）
