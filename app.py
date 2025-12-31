@@ -94,7 +94,6 @@ def predict_from_request():
 
     final_features = np.array(input_features).reshape(1, -1)
 
-    scaler = joblib.load('scaler.joblib')
     means = scaler.mean_[[0, 4, 5, 6, 8, 9, 39, 42, 50]]
     scales = scaler.scale_[[0, 4, 5, 6, 8, 9, 39, 42, 50]]
 
