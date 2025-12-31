@@ -89,7 +89,7 @@ def predict_from_request():
         get_feature_value('alb'),
         get_feature_value('glu'),
         get_feature_value('a_g'),
-        get_feature_value('baseline_vas_score')
+        get_feature_value('baseline_vas')
     ]
 
     final_features = np.array(input_features).reshape(1, -1)
